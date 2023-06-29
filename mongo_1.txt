@@ -1,0 +1,94 @@
+use my_test_db
+
+db.users.insertOne({name: "Max", age: 15})
+
+db.users.insertMany([
+    {name: "Max", age: 25},
+    {name: "Max", age: 35},
+    {name: "Max", age: 45}
+])
+
+db.users.find()
+db.users.drop()
+
+db.users.find({gender: "female"})
+db.users.find({gender: "female", rating: 2})
+db.users.find({_id: ObjectId("649af843f7a0a23a81a6c477")})
+db.users.find(
+    {gender: "female", rating: 2},
+    {name: 1, age: true, _id: 0}
+    )
+// знайде за gender+rating, виведе поля name, age
+
+db.users.find({
+    $or: [
+        {rating: 2},
+        {rating: 5},
+        {age: 12},
+    ]
+})  // знайде об'єкти, де виконується одна з умов
+
+db.users.find({
+    $and: [
+        {gender: "female"},
+        {rating: 2},
+    ]
+})  // знайде групу, в якій виконуються 2 умови
+
+// пошук за ключами
+db.users.find({age: {$in: [25, 12, 5, 10]}}) // знайде об'єкти, які мають такий вік
+db.users.find({age: {$not: {$in: [25, 12, 5, 10]}}})  // знайде об'єкти, які мають НЕ такий вік
+db.users.find({rating:{$gt:2}})  // знайде об'єкти з рейтингом понад 2
+db.users.find({rating:{$gte:2}})  // знайде об'єкти з рейтингом 2 і більше // + lt,  lte, eq, ne;
+
+// алфавітний пошук
+db.users.find({name:/^A/})    // ЧУТЛИВІ до регістру // ім'я починається на а
+// щоби зробити нечутливими:
+db.users.find({name:/^a/i})
+db.users.find({name:/a$/i})    // ім'я закінчується на а
+db.users.find({name:/.*l.*/i}) // в імені є буква l
+db.users.find({name:/.{2}t/i}) // третя буква t
+db.users.find({name:/^k.*a$/i})  // починається на k, закінчується на а
+
+// сортування
+db.users.find().sort({rating:1}) // від меншого до більшого
+db.users.find().sort({rating:-1})
+db.users.find().sort({rating:-1, age:-1}) // сортування за першим + за другим критерієм
+
+db.users.find().sort({rating:1}).limit(1)
+db.users.find().sort({rating:1}).limit(2).skip(1)
+
+db.users.updateOne(                                  // оновлюємо
+    {_id:ObjectId("649af843f7a0a23a81a6c476")},
+    {$set:{address:{street:"Derybasivska"}}}
+    )
+
+db.users.updateOne(                                  // додаємо поле
+    {_id:ObjectId("649af843f7a0a23a81a6c476")},
+    {$set:{status:true}}
+    )
+
+db.users.updateOne(                                  // видаляємо поле
+    {_id:ObjectId("649af843f7a0a23a81a6c476")},
+    {$unset:{status:1}}
+    )
+
+// робота з масивами
+db.users.find({parents:{$exists:0}}) // знайшло користувачів, які не мають батьків
+db.users.find({parents:null}) // або так, але тут якщо поле буде = null, то воно його знайде
+db.users.find({parents:{$size:1}}) // в кого один із батьків є
+db.users.find({studying:"java"})
+
+db.users.updateOne(
+    {_id:ObjectId("649af843f7a0a23a81a6c471")},
+    {$push:{studying:"python"}}
+    )              // це якщо саме в МАСИВ треба додати щось
+
+db.users.updateOne(
+    {_id:ObjectId("649af843f7a0a23a81a6c471")},
+    {$pull:{parents:"Masha"}}
+    )              // видалити з масиву
+
+db.users.find({"studying.1":"java"})         // шукаємо тих, у кого другий елемент масиву -- java; 1 - це індекс
+
+db.users.deleteOne({_id:ObjectId("649af843f7a0a23a81a6c473")}) // видалити об'єкт
